@@ -138,7 +138,6 @@ def run_coverage(dir_file_dict):
     directories = dir_file_dict.keys()
     for dir in directories:
         os.chdir(dir)
-        print(dir)
         subprocess.run(
             "coverage run --source=. -m unittest *",
             stderr=subprocess.DEVNULL,
