@@ -77,7 +77,7 @@ def display_n_worst():
     global dir_cov
     if not dir_cov:
         print("No Results")
-        return 
+        return
     dir_cov = {k: v for k, v in sorted(dir_cov.items(), key=lambda item: item[1])}
     k, v = dir_cov.keys(), dir_cov.values()
     width = shutil.get_terminal_size().columns
@@ -149,13 +149,13 @@ def run_coverage(dir_file_dict):
             "coverage run --source=. -m unittest *.py",
             shell=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         subprocess.run(
             f"coverage run -a --source=. -m pytest --doctest-modules",
             shell=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         subprocess_output = subprocess.run(
             "coverage report -m", shell=True, capture_output=True
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         description="This is a tool for checking the test coverage of directories."
     )
     parser.add_argument(
-        '-o',
+        "-o",
         metavar="file",
         nargs="*",
         type=str,
