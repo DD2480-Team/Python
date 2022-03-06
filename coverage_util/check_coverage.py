@@ -5,8 +5,9 @@ import re
 import shutil
 import subprocess
 from collections import defaultdict
+import time
 
-ignored_wildcards = ["project_euler", "__init__.py", "tests", "__pycache__"]
+ignored_wildcards = ["project_euler", "__init__.py", "*/tests", "*/__pycache__"]
 root_dir = os.path.abspath(__file__).replace("/coverage_util/check_coverage.py", "")
 save_file = False
 dir_cov = {}
@@ -14,8 +15,9 @@ dir_cov = {}
 
 def extend_wildcards():
     """add the contents of the gitignore to ignored_wildcards"""
+    global ignored_wildcards
     try:
-        ignore = open(".gitignore")
+        ignore = open("../.gitignore")
     except FileNotFoundError:
         pass
     else:
@@ -38,6 +40,8 @@ def create_dir_file_dict():
     # creates long regex for matching filenames/paths based on the wildcards
     excluded = r"|".join([fnmatch.translate(wc) for wc in ignored_wildcards])
     for dirpath, dirnames, filenames in os.walk(root_dir):
+        if re.match(excluded, dirpath):
+            continue
         dirnames[:] = [dir for dir in dirnames if not re.match(excluded, dir)]
         filenames[:] = [file for file in filenames if not re.match(excluded, file)]
         [dir_file_dict[dirpath].append(f) for f in filenames if ".py" in f]
@@ -71,6 +75,9 @@ def display_n_worst():
     n = 10 by default, or can be passed as an argument using '-n'
     """
     global dir_cov
+    if not dir_cov:
+        print("No Results")
+        return 
     dir_cov = {k: v for k, v in sorted(dir_cov.items(), key=lambda item: item[1])}
     k, v = dir_cov.keys(), dir_cov.values()
     width = shutil.get_terminal_size().columns
@@ -115,7 +122,7 @@ def run_coverage(dir_file_dict):
     """
     visits every directory that contains python files, and runs three coverage commands
     in the directory
-    1) 'coverage run --source=. -m unittest *'
+    1) 'coverage run --source=. -m unittest *py'
         checks the unittest coverage of the directory
     2) 'coverage run -a --source=. -m pytest --doctest-module'
         appends the coverage results of doctests in the directory
@@ -139,21 +146,24 @@ def run_coverage(dir_file_dict):
     for dir in directories:
         os.chdir(dir)
         subprocess.run(
-            "coverage run --source=. -m unittest *",
-            stderr=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
+            "coverage run --source=. -m unittest *.py",
             shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
         )
         subprocess.run(
-            "coverage run -a --source=. -m pytest --doctest-modules",
-            stderr=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
+            f"coverage run -a --source=. -m pytest --doctest-modules",
             shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
         )
         subprocess_output = subprocess.run(
             "coverage report -m", shell=True, capture_output=True
         )
         result = subprocess_output.stdout.decode()
+        if "No" in result:
+            print(f"There was an error running coverage tests in {dir}.")
+            continue
         if save_file:
             save_results(dir, result)
         save_directory_results(dir, result)
@@ -172,14 +182,14 @@ if __name__ == "__main__":
         description="This is a tool for checking the test coverage of directories."
     )
     parser.add_argument(
-        "-i",
+        '-o',
         metavar="file",
         nargs="*",
         type=str,
         required=False,
-        help="strings of shell-style wildcards of filepaths/ filensames to ignore \
-                in coverage check  (.gitignore is ignored by default) \
-                ex. -i '*/test' 'z?'",
+        help="strings of shell-style wildcards of filepaths/ filensames to omit \
+                in coverage check  (.gitignore is omitted by default) \
+                MUST BE IN SINGLE QUOTES ex. -o '*/tests/*' ",
     )
     parser.add_argument(
         "-d",
@@ -203,8 +213,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.d:
         root_dir += f"/{args.d.strip('/')}"
-    if args.i:
-        ignored_wildcards.extend(args.i)
+    if args.o:
+        ignored_wildcards.extend(args.o)
     save_file = args.s
     n_worst = args.n
     main()
