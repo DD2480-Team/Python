@@ -7,7 +7,7 @@ import subprocess
 from collections import defaultdict
 
 ignored_wildcards = ["project_euler", "__init__.py", "tests", "__pycache__"]
-root_dir = __file__.replace("/coverage_util/check_coverage.py", "")
+root_dir = os.path.abspath(__file__).replace("/coverage_util/check_coverage.py", "")
 save_file = False
 dir_cov = {}
 
