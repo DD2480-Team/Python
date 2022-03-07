@@ -5,9 +5,8 @@ import re
 import shutil
 import subprocess
 from collections import defaultdict
-import time
 
-ignored_wildcards = ["project_euler", "__init__.py", "*/tests", "*/__pycache__"]
+ignored_wildcards = ["project_euler", "*__init__.py", "*/tests", "*/__pycache__"]
 root_dir = os.path.abspath(__file__).replace("/coverage_util/check_coverage.py", "")
 save_file = False
 dir_cov = {}
@@ -32,7 +31,6 @@ def create_dir_file_dict():
     creates a dictionary relating directories to the python files within
     excludes files and directories contained in the gitingore
     as well as those passed in as command line arguments using the flag '-i'
-
     Returns:
         dict: key: directory path, value, list of pythton files in the directory
     """
@@ -52,7 +50,6 @@ def save_results(dir, result):
     """
     writes the results to the file 'coverage_results.txt' in the
     directory
-
     Args:
         dir (str): a directory string
         result (str): the string result of running coverage
@@ -103,7 +100,6 @@ def save_directory_results(dir, result):
     parses the result of running coverage checks in the directory (dir)
     to get the percengage coverage, and saves the value to the global dict
     dir_cov. key = dir, value = percent_coverage
-
     Args:
         dir (str): a directory string
         result (str): the string result of running coverage
@@ -128,15 +124,12 @@ def run_coverage(dir_file_dict):
         appends the coverage results of doctests in the directory
     3) 'coveage report'
         generates the results of the coverage checks
-
     If save_file = True (if coverage_check is called with the -s flag set),
     the results of the coverage report are saved in the directory
     where the coverage tests are run
-
     Otherwise, the only output is written to the terminal by the
     display_n_worst() function which displays the n 'least covered' directories
     n=10 by default but can be set with command line flag '-n'
-
     Args:
         dir_file_dict (dict): a dictionary with
             key = directories containing python files,
@@ -152,7 +145,7 @@ def run_coverage(dir_file_dict):
             stderr=subprocess.DEVNULL,
         )
         subprocess.run(
-            f"coverage run -a --source=. -m pytest --doctest-modules",
+            f"coverage run -a --source=. -m pytest --doctest-modules *.py",
             shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
