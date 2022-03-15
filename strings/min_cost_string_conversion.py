@@ -9,6 +9,9 @@ The only allowed operations are
 """
 
 
+import doctest
+
+
 def compute_transform_tables(
     source_string: str,
     destination_string: str,
@@ -17,6 +20,18 @@ def compute_transform_tables(
     delete_cost: int,
     insert_cost: int,
 ) -> tuple[list[list[int]], list[list[str]]]:
+    """
+    >>> compute_transform_tables("", "test", 1, 1, 1, 1)
+    ([[0, 1, 2, 3, 4]], [['0', 'It', 'Ie', 'Is', 'It']])
+    >>> compute_transform_tables("t", "test", 1, 1, 1, 1)
+    ([[0, 1, 2, 3, 4], [1, 1, 2, 3, 4]], [['0', 'It', 'Ie', 'Is', 'It'], ['Dt', 'Ct', 'Rte', 'Rts', 'Ct']])
+    >>> compute_transform_tables("te", "test", 1, 1, 1, 1)
+    ([[0, 1, 2, 3, 4], [1, 1, 2, 3, 4], [2, 2, 2, 3, 4]], [['0', 'It', 'Ie', 'Is', 'It'], ['Dt', 'Ct', 'Rte', 'Rts', 'Ct'], ['De', 'Ret', 'Ce', 'Res', 'Ret']])
+    >>> compute_transform_tables("pl", "tst", 1, 1, 1, 1)
+    ([[0, 1, 2, 3], [1, 1, 2, 3], [2, 2, 2, 3]], [['0', 'It', 'Is', 'It'], ['Dp', 'Rpt', 'Rps', 'Rpt'], ['Dl', 'Rlt', 'Rls', 'Rlt']])
+    >>> compute_transform_tables("test", "", 1, 1, 1, 1)
+    ([[0], [1], [2], [3], [4]], [['0'], ['Dt'], ['De'], ['Ds'], ['Dt']])
+    """
     source_seq = list(source_string)
     destination_seq = list(destination_string)
     len_source_seq = len(source_seq)
@@ -58,6 +73,17 @@ def compute_transform_tables(
 
 
 def assemble_transformation(ops: list[list[str]], i: int, j: int) -> list[str]:
+    """
+    >>> costs, ops = compute_transform_tables("te", "test", 1, 1, 1, 1)
+    >>> assemble_transformation(ops, 0, 0)
+    []
+    >>> assemble_transformation(ops, 1, 1)
+    ['Ct']
+    >>> assemble_transformation(ops, 2, 1)
+    ['Dt', 'Ret']
+    >>> assemble_transformation(ops, 1, 2)
+    ['It', 'Rte']
+    """
     if i == 0 and j == 0:
         return []
     else:
@@ -75,8 +101,37 @@ def assemble_transformation(ops: list[list[str]], i: int, j: int) -> list[str]:
             return seq
 
 
-if __name__ == "__main__":
-    _, operations = compute_transform_tables("Python", "Algorithms", -1, 1, 2, 2)
+def print_operations(
+    source_string: str,
+    destination_string: str,
+    copy_cost: int,
+    replace_cost: int,
+    delete_cost: int,
+    insert_cost: int,
+):
+    """
+    >>> print_operations("Python", "Algorithms", 1, 1, 1, 1)
+    Python
+    APython
+    AlPython
+    AlgPython
+    AlgoPython
+    Algorython
+    Algorithon
+    Algorithon
+    Algorithon
+    Algorithmn
+    Algorithms
+    Cost:  10
+    """
+    _, operations = compute_transform_tables(
+        source_string,
+        destination_string,
+        copy_cost,
+        replace_cost,
+        delete_cost,
+        insert_cost,
+    )
 
     m = len(operations)
     n = len(operations[0])
@@ -85,7 +140,6 @@ if __name__ == "__main__":
     string = list("Python")
     i = 0
     cost = 0
-
     with open("min_cost.txt", "w") as file:
         for op in sequence:
             print("".join(string))
@@ -127,3 +181,7 @@ if __name__ == "__main__":
         print("Cost: ", cost)
 
         file.write("\r\nMinimum cost: " + str(cost))
+
+
+if __name__ == "__main__":
+    doctest.testmod()

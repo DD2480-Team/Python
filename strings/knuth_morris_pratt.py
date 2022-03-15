@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import doctest
+
 
 def kmp(pattern: str, text: str) -> bool:
     """
@@ -13,7 +15,25 @@ def kmp(pattern: str, text: str) -> bool:
 
     2) Step through the text one character at a time and compare it to a character in
         the pattern updating our location within the pattern if necessary
-
+    >>> pattern = "abc1abc12"
+    >>> text1 = "alskfjaldsabc1abc1abc12k23adsfabcabc"
+    >>> print(kmp(pattern, text1))
+    True
+    >>> text2 = "alskfjaldsk23adsfabcabc"
+    >>> print(kmp(pattern, text2))
+    False
+    >>> pattern = "ABABX"
+    >>> text = "ABABZABABYABABX"
+    >>> print(kmp(pattern, text))
+    True
+    >>> pattern = "AAAB"
+    >>> text = "ABAAAAAB"
+    >>> print(kmp(pattern, text))
+    True
+    >>> pattern = "abcdabcy"
+    >>> text = "abcxabcdabxabcdabcdabcy"
+    >>> print(kmp(pattern, text))
+    True
     """
 
     # 1) Construct the failure array
@@ -41,6 +61,12 @@ def get_failure_array(pattern: str) -> list[int]:
     Calculates the new index we should go to if we fail a comparison
     :param pattern:
     :return:
+    >>> pattern = "aabaabaaa"
+    >>> get_failure_array(pattern)
+    [0, 1, 0, 1, 2, 3, 4, 5, 2]
+    >>> pattern = "abcdbeabc"
+    >>> get_failure_array(pattern)
+    [0, 0, 0, 0, 0, 0, 1, 2, 3]
     """
     failure = [0]
     i = 0
@@ -57,27 +83,4 @@ def get_failure_array(pattern: str) -> list[int]:
 
 
 if __name__ == "__main__":
-    # Test 1)
-    pattern = "abc1abc12"
-    text1 = "alskfjaldsabc1abc1abc12k23adsfabcabc"
-    text2 = "alskfjaldsk23adsfabcabc"
-    assert kmp(pattern, text1) and not kmp(pattern, text2)
-
-    # Test 2)
-    pattern = "ABABX"
-    text = "ABABZABABYABABX"
-    assert kmp(pattern, text)
-
-    # Test 3)
-    pattern = "AAAB"
-    text = "ABAAAAAB"
-    assert kmp(pattern, text)
-
-    # Test 4)
-    pattern = "abcdabcy"
-    text = "abcxabcdabxabcdabcdabcy"
-    assert kmp(pattern, text)
-
-    # Test 5)
-    pattern = "aabaabaaa"
-    assert get_failure_array(pattern) == [0, 1, 0, 1, 2, 3, 4, 5, 2]
+    doctest.testmod()
